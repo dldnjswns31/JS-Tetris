@@ -49,13 +49,13 @@ function prependNewLine(){
     playground.prepend(li);
 }
 
-function renderBlocks() {
+function renderBlocks(moveType = '') {
     const { type, direction, top, left} = tempMovingItem;
     const movingBlocks = document.querySelectorAll('.moving');
     movingBlocks.forEach(moving=>{
         moving.classList.remove(type,'moving');
     })
-    BLOCKS[type][direction].forEach(block=>{
+    BLOCKS[type][direction].some(block=>{
         const x = block[0] + left;
         const y = block[1] + top;
         // const xxx = 조건 ? 참일경우 : 거짓일경우 ----> 삼항연산자
@@ -71,19 +71,33 @@ function renderBlocks() {
                     seizeBlock();
                 }
             },0);  // 콜스택이 가득 차는 것을 막기 위해 이벤트 루프 밖으로 빼내준다. setTimeout 사용.
+            return true;
         }
-    })
+    });
     movingItem.left = left;
     movingItem.top = top;
     movingItem.direction = direction; 
 }
 
 function seizeBlock() {
+    const movingBlocks = document.querySelectorAll('.moving');
+    movingBlocks.forEach(moving => {
+        moving.classList.remove('moving');
+        moving.classList.add('seized');
+    })
+    generageNewBlock();
+}
 
+function generageNewBlock() {
+    movingItem.top = 0;
+    movingItem.left = 3;
+    movingItem.direction = 0;
+    tempMovingItem = {...movingItem};
+    renderBlocks();
 }
 
 function checkEmpty(target) {
-    if(!target) {
+    if(!target || target.classList.contains('seized')) {
         return false;
     }
     return true;
@@ -91,7 +105,7 @@ function checkEmpty(target) {
 
 function moveBlock(moveType, amount) {
     tempMovingItem[moveType] += amount
-    renderBlocks();
+    renderBlocks(moveType);
 }
 
 function changeDirection() {
